@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>C/C++ Training Regimen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #131720;
+    --panel:    #1a2030;
+    --border:   #242d3e;
+    --accent1:  #5b8cff;   /* electric blue  */
+    --accent2:  #c084fc;   /* violet         */
+    --accent3:  #34d399;   /* green tick      */
+    --accent4:  #fb923c;   /* amber warn      */
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --dim:      #94a3b8;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ──────────────────────────────── */
+  .hero {
+    padding: 52px 32px 36px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(160deg, #0d1525 0%, var(--bg) 60%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -120px;
+    width: 440px; height: 440px;
+    background: radial-gradient(circle, rgba(91,140,255,.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--accent2); }
+  .hero-sub {
+    font-size: 14px;
+    color: var(--dim);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* ── Progress bar ────────────────────────── */
+  .progress-wrap {
+    padding: 20px 32px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--panel);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    border-radius: 99px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Layout ──────────────────────────────── */
+  .main {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    max-width: 1100px;
+    margin: 28px auto 0;
+    padding: 0 24px;
+  }
+
+  /* ── Phase Nav ───────────────────────────── */
+  .phase-nav {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 20px;
+  }
+  .phase-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s, color .15s;
+  }
+  .phase-nav-btn:hover { background: var(--panel); }
+  .phase-nav-btn.active {
+    background: rgba(91,140,255,.12);
+    color: var(--accent1);
+  }
+  .phase-nav-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .phase-nav-btn.active .dot { background: var(--accent1); }
+  .phase-nav-btn.done .dot  { background: var(--accent3); }
+  .phase-nav-label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--dim);
+    line-height: 1.3;
+  }
+  .phase-nav-btn.active .phase-nav-label { color: var(--accent1); }
+
+  /* ── Content ─────────────────────────────── */
+  .content { min-width: 0; }
+
+  .phase-section { display: none; }
+  .phase-section.active { display: block; }
+
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .phase-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .phase-header-text h2 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    line-height: 1.2;
+  }
+  .phase-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .tag-time  { background: rgba(91,140,255,.15); color: var(--accent1); }
+  .tag-lang  { background: rgba(192,132,252,.15); color: var(--accent2); }
+  .tag-level { background: rgba(52,211,153,.15);  color: var(--accent3); }
+  .tag-warn  { background: rgba(251,146,60,.15);  color: var(--accent4); }
+
+  .phase-desc {
+    font-size: 13.5px;
+    color: var(--dim);
+    line-height: 1.75;
+    margin-bottom: 24px;
+    border-left: 2px solid var(--border);
+    padding-left: 14px;
+  }
+
+  /* ── Week cards ──────────────────────────── */
+  .weeks { display: flex; flex-direction: column; gap: 14px; }
+
+  .week-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .week-card:hover { border-color: #2f3f5a; }
+
+  .week-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .week-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    min-width: 54px;
+  }
+  .week-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .week-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+    background: transparent;
+  }
+  .week-check.checked {
+    background: var(--accent3);
+    border-color: var(--accent3);
+  }
+  .week-check.checked::after { content: '✓'; font-size: 11px; color: #000; font-weight: 700; }
+  .week-chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform .2s;
+  }
+  .week-card.open .week-chevron { transform: rotate(90deg); }
+
+  .week-body {
+    display: none;
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .week-card.open .week-body { display: block; }
+
+  .week-body-inner { padding-top: 14px; }
+
+  /* ── Topic grid ──────────────────────────── */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .topic-chip {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+
+  /* ── Resources ───────────────────────────── */
+  .resources-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(91,140,255,.08);
+    border: 1px solid rgba(91,140,255,.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--accent1);
+    text-decoration: none;
+    transition: background .15s;
+  }
+  .resource-link:hover { background: rgba(91,140,255,.16); }
+
+  /* ── Exercises ───────────────────────────── */
+  .exercises { display: flex; flex-direction: column; gap: 6px; }
+  .exercise-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.55;
+  }
+  .exercise-item::before {
+    content: '→';
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  /* ── Pro tip ─────────────────────────────── */
+  .pro-tip {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(251,146,60,.07);
+    border: 1px solid rgba(251,146,60,.2);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--accent4);
+    line-height: 1.6;
+  }
+  .pro-tip strong { font-weight: 600; }
+
+  /* ── Milestone banner ────────────────────── */
+  .milestone {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: linear-gradient(110deg, rgba(91,140,255,.08), rgba(192,132,252,.08));
+    border: 1px solid rgba(91,140,255,.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .milestone-icon { font-size: 20px; flex-shrink: 0; }
+  .milestone-text { font-size: 13px; color: var(--dim); line-height: 1.65; }
+  .milestone-text strong { color: var(--text); }
+
+  /* ── Section label ───────────────────────── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  /* ── Nav buttons ─────────────────────────── */
+  .phase-nav-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .btn {
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary {
+    background: var(--accent1);
+    border-color: var(--accent1);
+    color: #000;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--dim);
+  }
+  .btn-secondary:hover { background: var(--panel); color: var(--text); }
+
+  /* ── Responsive ──────────────────────────── */
+  @media (max-width: 680px) {
+    .main { grid-template-columns: 1fr; padding: 0 16px; }
+    .phase-nav { position: static; flex-direction: row; flex-wrap: wrap; padding-right: 0; margin-bottom: 20px; }
+    .phase-nav-btn { padding: 6px 10px; }
+    .phase-nav-label { font-size: 11px; }
+    .hero { padding: 36px 20px 24px; }
+    .progress-wrap { padding: 16px 20px 0; }
+    .topic-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">Training Regimen · Systems Programming</div>
+  <h1>Zero → <span>Intermediate</span><br>C / C++</h1>
+  <p class="hero-sub">A structured 12–14 week curriculum for someone with a CS background who already writes Python and knows how memory works in theory — but hasn't put it into practice in C or C++.</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 14 weeks done</div>
+</div>
+
+<div class="main">
+  <!-- ── Phase Nav ── -->
+  <nav class="phase-nav" id="phaseNav">
+    <button class="phase-nav-btn active" data-phase="0" onclick="switchPhase(0)">
+      <span class="dot"></span>
+      <span class="phase-nav-label">Phase I<br>C Foundations</span>
+    </button>
+    <button class="phase-nav-btn" data-phase="1" onclick="switchPhase(1)">
+      <span class="dot"></span>
+      <span class="phase-nav-label">Phase II<br>C Mastery</span>
+    </button>
+    <button class="phase-nav-btn" data-phase="2" onclick="switchPhase(2)">
+      <span class="dot"></span>
+      <span class="phase-nav-label">Phase III<br>C++ Core</span>
+    </button>
+    <button class="phase-nav-btn" data-phase="3" onclick="switchPhase(3)">
+      <span class="dot"></span>
+      <span class="phase-nav-label">Phase IV<br>Modern C++</span>
+    </button>
+    <button class="phase-nav-btn" data-phase="4" onclick="switchPhase(4)">
+      <span class="dot"></span>
+      <span class="phase-nav-label">Phase V<br>Projects</span>
+    </button>
+  </nav>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <!-- ═══════════ PHASE I ═══════════ -->
+    <div class="phase-section active" id="phase-0">
+      <div class="phase-header">
+        <div class="phase-icon" style="background:rgba(91,140,255,.12)">🔩</div>
+        <div class="phase-header-text">
+          <h2>Phase I — C Foundations</h2>
+          <div class="phase-meta">
+            <span class="tag tag-time">Weeks 1–3</span>
+            <span class="tag tag-lang">Pure C</span>
+            <span class="tag tag-level">Beginner → Confident</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-desc">Learn C before C++. C forces you to understand memory layout, pointers, and manual resource management with zero safety nets. These skills are what separate C++ programmers who understand the machine from those who cargo-cult smart pointers.</p>
+
+      <div class="weeks">
+
+        <!-- Week 1 -->
+        <div class="week-card" id="wk-0">
+          <div class="week-header" onclick="toggleWeek('wk-0')">
+            <span class="week-num">Week 01</span>
+            <span class="week-title">The Machine Model: Types, Memory, Compilation</span>
+            <span class="week-check" id="chk-0" onclick="toggleCheck(event,'chk-0')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Compilation pipeline<br>(pre → compile → link)</div>
+                <div class="topic-chip">Primitive types &amp; sizes<br>(sizeof, stdint.h)</div>
+                <div class="topic-chip">Stack vs Heap mental model</div>
+                <div class="topic-chip">Variables, scope, linkage</div>
+                <div class="topic-chip">gcc/clang flags<br>(-Wall -Wextra -g -O2)</div>
+                <div class="topic-chip">printf/scanf, I/O basics</div>
+              </div>
+              <div class="section-label">Resources</div>
+              <div class="resources-row">
+                <a class="resource-link" href="https://beej.us/guide/bgc/" target="_blank">📖 Beej's Guide to C (ch1–5)</a>
+                <a class="resource-link" href="https://cdecl.org/" target="_blank">🔍 cdecl.org</a>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Write a program that prints the size of every basic type on your machine.</div>
+                <div class="exercise-item">Implement <code>fizzbuzz</code> using only <code>for</code> loops and <code>printf</code>.</div>
+                <div class="exercise-item">Compile with <code>-Wall -Wextra</code> and eliminate every warning.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> Add <code>-fsanitize=address,undefined</code> to your compiler flags now and keep them for all of Phase I. Let AddressSanitizer yell at you — that's the fastest way to build pointer intuition.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 2 -->
+        <div class="week-card" id="wk-1">
+          <div class="week-header" onclick="toggleWeek('wk-1')">
+            <span class="week-num">Week 02</span>
+            <span class="week-title">Pointers, Arrays, and the Address Space</span>
+            <span class="week-check" id="chk-1" onclick="toggleCheck(event,'chk-1')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Pointer syntax &amp; semantics<br>(*, &amp;, -&gt;)</div>
+                <div class="topic-chip">Pointer arithmetic</div>
+                <div class="topic-chip">Arrays decay to pointers</div>
+                <div class="topic-chip">2D arrays &amp; layout</div>
+                <div class="topic-chip">const-correctness</div>
+                <div class="topic-chip">NULL, dangling ptrs,<br>double-free</div>
+              </div>
+              <div class="section-label">Resources</div>
+              <div class="resources-row">
+                <a class="resource-link" href="https://beej.us/guide/bgc/" target="_blank">📖 Beej's Guide (ch6–8)</a>
+                <a class="resource-link" href="https://www.cs.yale.edu/homes/aspnes/classes/223/notes.html" target="_blank">📖 Yale CS223 Notes</a>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Implement <code>memcpy</code>, <code>strlen</code>, and <code>strrev</code> from scratch.</div>
+                <div class="exercise-item">Write a function that reverses an array in-place using only pointer arithmetic (no index operator).</div>
+                <div class="exercise-item">Debug 3 intentional memory bugs using valgrind or ASan — document what each error message means.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> Draw the address space on paper for every exercise. Physical memory diagrams are more valuable than any tutorial at this stage.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 3 -->
+        <div class="week-card" id="wk-2">
+          <div class="week-header" onclick="toggleWeek('wk-2')">
+            <span class="week-num">Week 03</span>
+            <span class="week-title">Functions, Structs, and Dynamic Allocation</span>
+            <span class="week-check" id="chk-2" onclick="toggleCheck(event,'chk-2')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Function pointers</div>
+                <div class="topic-chip">Structs &amp; padding</div>
+                <div class="topic-chip">malloc/calloc/realloc/free</div>
+                <div class="topic-chip">Heap lifetime ownership</div>
+                <div class="topic-chip">Linked list from scratch</div>
+                <div class="topic-chip">Header files &amp; .c/.h split</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Implement a singly-linked list with <code>push</code>, <code>pop</code>, <code>find</code>, and <code>free_all</code>.</div>
+                <div class="exercise-item">Write a generic <code>qsort</code> wrapper using a function pointer comparator.</div>
+                <div class="exercise-item">Build a dynamic array (like Python list) — auto-doubling capacity with <code>realloc</code>.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> Every <code>malloc</code> must have a clear owner. Start writing a comment above each heap allocation: "// Freed in: [function name]". This discipline maps directly to C++ RAII.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /weeks -->
+
+      <div class="milestone">
+        <span class="milestone-icon">🎯</span>
+        <div class="milestone-text"><strong>Phase I Milestone:</strong> You can write a correct, valgrind-clean C program from scratch with dynamic allocation, pointer arithmetic, and no memory leaks. You understand what the compiler actually generates.</div>
+      </div>
+
+      <div class="phase-nav-controls">
+        <button class="btn btn-primary" onclick="switchPhase(1)">Phase II →</button>
+      </div>
+    </div><!-- /phase-0 -->
+
+
+    <!-- ═══════════ PHASE II ═══════════ -->
+    <div class="phase-section" id="phase-1">
+      <div class="phase-header">
+        <div class="phase-icon" style="background:rgba(192,132,252,.12)">⚙️</div>
+        <div class="phase-header-text">
+          <h2>Phase II — C Mastery</h2>
+          <div class="phase-meta">
+            <span class="tag tag-time">Weeks 4–6</span>
+            <span class="tag tag-lang">C · Systems</span>
+            <span class="tag tag-level">Intermediate C</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-desc">Push into systems-level C: bitwise ops, file I/O, process/signal handling, and build tooling. By the end you'll be comfortable reading kernel or HPC library source code.</p>
+
+      <div class="weeks">
+
+        <!-- Week 4 -->
+        <div class="week-card" id="wk-3">
+          <div class="week-header" onclick="toggleWeek('wk-3')">
+            <span class="week-num">Week 04</span>
+            <span class="week-title">Bitwise Operations &amp; Low-Level Types</span>
+            <span class="week-check" id="chk-3" onclick="toggleCheck(event,'chk-3')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Bitwise &amp;, |, ^, ~, &lt;&lt;, &gt;&gt;</div>
+                <div class="topic-chip">Bit flags &amp; masks</div>
+                <div class="topic-chip">Unions &amp; type punning</div>
+                <div class="topic-chip">Endianness</div>
+                <div class="topic-chip">Fixed-width types (uint32_t)</div>
+                <div class="topic-chip">Bit fields in structs</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Implement a bitmask permission system (read/write/exec flags).</div>
+                <div class="exercise-item">Write a function to count set bits (popcount) without using built-ins.</div>
+                <div class="exercise-item">Use a union to inspect the bit layout of a float — connect to IEEE 754.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Trans7 relevance:</strong> Stabilizer syndrome bits in QEC are literally bitstrings. Bit manipulation at this level is directly applicable to your decoder work.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 5 -->
+        <div class="week-card" id="wk-4">
+          <div class="week-header" onclick="toggleWeek('wk-4')">
+            <span class="week-num">Week 05</span>
+            <span class="week-title">File I/O, Error Handling &amp; POSIX Basics</span>
+            <span class="week-check" id="chk-4" onclick="toggleCheck(event,'chk-4')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">fopen/fclose/fread/fwrite</div>
+                <div class="topic-chip">errno &amp; perror</div>
+                <div class="topic-chip">File descriptors (open/read/write)</div>
+                <div class="topic-chip">mmap basics</div>
+                <div class="topic-chip">Error propagation patterns</div>
+                <div class="topic-chip">setjmp/longjmp (optional)</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Write a binary file serializer/deserializer for a struct with mixed types.</div>
+                <div class="exercise-item">Re-implement <code>wc -l</code> (line counter) using only POSIX <code>read()</code> with a fixed buffer.</div>
+                <div class="exercise-item">Use <code>mmap</code> to read a large file and measure throughput vs <code>fread</code>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 6 -->
+        <div class="week-card" id="wk-5">
+          <div class="week-header" onclick="toggleWeek('wk-5')">
+            <span class="week-num">Week 06</span>
+            <span class="week-title">Build Systems, Debugging &amp; Profiling</span>
+            <span class="week-check" id="chk-5" onclick="toggleCheck(event,'chk-5')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Makefiles (targets, deps, vars)</div>
+                <div class="topic-chip">CMake basics</div>
+                <div class="topic-chip">gdb / lldb workflows</div>
+                <div class="topic-chip">valgrind --leak-check=full</div>
+                <div class="topic-chip">perf &amp; gprof basics</div>
+                <div class="topic-chip">Static analysis (clang-tidy)</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Write a non-trivial Makefile with separate compile and link steps, and a <code>clean</code> target.</div>
+                <div class="exercise-item">Use gdb to set a conditional breakpoint inside a loop — step through pointer arithmetic.</div>
+                <div class="exercise-item">Profile your Week 3 linked list with <code>perf stat</code> and interpret cache-miss numbers.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> CMake is what you'll encounter in almost every real C/C++ project. Spend extra time here — even a shallow CMake understanding pays dividends fast.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /weeks -->
+
+      <div class="milestone">
+        <span class="milestone-icon">🎯</span>
+        <div class="milestone-text"><strong>Phase II Milestone:</strong> You can read a typical HPC or systems library in C, understand its Makefile/CMake, debug it with gdb, and profile it. You're ready to understand what C++ actually adds on top.</div>
+      </div>
+
+      <div class="phase-nav-controls">
+        <button class="btn btn-secondary" onclick="switchPhase(0)">← Phase I</button>
+        <button class="btn btn-primary" onclick="switchPhase(2)">Phase III →</button>
+      </div>
+    </div><!-- /phase-1 -->
+
+
+    <!-- ═══════════ PHASE III ═══════════ -->
+    <div class="phase-section" id="phase-2">
+      <div class="phase-header">
+        <div class="phase-icon" style="background:rgba(52,211,153,.10)">🧱</div>
+        <div class="phase-header-text">
+          <h2>Phase III — C++ Core</h2>
+          <div class="phase-meta">
+            <span class="tag tag-time">Weeks 7–9</span>
+            <span class="tag tag-lang">C++11/14</span>
+            <span class="tag tag-level">Foundational OOP &amp; RAII</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-desc">Now C++ makes sense because you know what it's abstracting. Focus on the "zero-cost abstraction" principle: understand exactly what the compiler generates for each C++ feature.</p>
+
+      <div class="weeks">
+
+        <!-- Week 7 -->
+        <div class="week-card" id="wk-6">
+          <div class="week-header" onclick="toggleWeek('wk-6')">
+            <span class="week-num">Week 07</span>
+            <span class="week-title">Classes, RAII, and the Rule of Five</span>
+            <span class="week-check" id="chk-6" onclick="toggleCheck(event,'chk-6')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Classes vs structs in C++</div>
+                <div class="topic-chip">Constructors &amp; destructors</div>
+                <div class="topic-chip">RAII pattern</div>
+                <div class="topic-chip">Rule of Three / Five / Zero</div>
+                <div class="topic-chip">Copy &amp; move semantics</div>
+                <div class="topic-chip">this pointer</div>
+              </div>
+              <div class="section-label">Resources</div>
+              <div class="resources-row">
+                <a class="resource-link" href="https://learncpp.com" target="_blank">📖 learncpp.com (ch13–15)</a>
+                <a class="resource-link" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines" target="_blank">📖 C++ Core Guidelines</a>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Re-implement your Week 3 dynamic array as a C++ class with proper RAII — no leaks possible.</div>
+                <div class="exercise-item">Write a class that wraps a file descriptor and closes it in the destructor. Test that it's exception-safe.</div>
+                <div class="exercise-item">Implement all five special member functions for a Matrix class — verify with a copy-and-modify test.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> Run your C++ under valgrind alongside the C version of the same task. Seeing identical output and zero leaks from RAII will cement why C++ exists.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 8 -->
+        <div class="week-card" id="wk-7">
+          <div class="week-header" onclick="toggleWeek('wk-7')">
+            <span class="week-num">Week 08</span>
+            <span class="week-title">Templates, Operator Overloading &amp; Namespaces</span>
+            <span class="week-check" id="chk-7" onclick="toggleCheck(event,'chk-7')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Function &amp; class templates</div>
+                <div class="topic-chip">Template specialization</div>
+                <div class="topic-chip">Operator overloading</div>
+                <div class="topic-chip">Namespaces</div>
+                <div class="topic-chip">inline &amp; constexpr</div>
+                <div class="topic-chip">Header-only libraries</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Write a generic <code>Stack&lt;T&gt;</code> template class backed by your dynamic array.</div>
+                <div class="exercise-item">Implement a <code>Vec3&lt;T&gt;</code> with overloaded <code>+</code>, <code>*</code>, <code>dot()</code>, and <code>operator[]</code>.</div>
+                <div class="exercise-item">Use <code>constexpr</code> to compute Fibonacci at compile time — inspect the assembly output.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> Templates are compiled per-instantiation. Run <code>g++ -c -S</code> to see the generated assembly for <code>Vec3&lt;float&gt;</code> vs <code>Vec3&lt;double&gt;</code> — connects directly to your PyTorch dtype work.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 9 -->
+        <div class="week-card" id="wk-8">
+          <div class="week-header" onclick="toggleWeek('wk-8')">
+            <span class="week-num">Week 09</span>
+            <span class="week-title">Inheritance, Polymorphism &amp; Exceptions</span>
+            <span class="week-check" id="chk-8" onclick="toggleCheck(event,'chk-8')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">Virtual functions &amp; vtable</div>
+                <div class="topic-chip">Abstract classes &amp; interfaces</div>
+                <div class="topic-chip">Dynamic vs static dispatch</div>
+                <div class="topic-chip">dynamic_cast / RTTI</div>
+                <div class="topic-chip">Exception safety guarantees</div>
+                <div class="topic-chip">noexcept</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Implement a <code>Shape</code> hierarchy (Circle, Rect, Triangle) with a virtual <code>area()</code> — measure vtable overhead with perf.</div>
+                <div class="exercise-item">Rewrite the shape dispatch using <code>std::variant</code> + <code>std::visit</code> and compare assembly size.</div>
+                <div class="exercise-item">Write a class that provides the strong exception guarantee — document how RAII enables this.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /weeks -->
+
+      <div class="milestone">
+        <span class="milestone-icon">🎯</span>
+        <div class="milestone-text"><strong>Phase III Milestone:</strong> You can design a C++ class hierarchy, understand the cost of virtual dispatch, write exception-safe code, and use templates to avoid code duplication. You're at "knows C++" territory.</div>
+      </div>
+
+      <div class="phase-nav-controls">
+        <button class="btn btn-secondary" onclick="switchPhase(1)">← Phase II</button>
+        <button class="btn btn-primary" onclick="switchPhase(3)">Phase IV →</button>
+      </div>
+    </div><!-- /phase-2 -->
+
+
+    <!-- ═══════════ PHASE IV ═══════════ -->
+    <div class="phase-section" id="phase-3">
+      <div class="phase-header">
+        <div class="phase-icon" style="background:rgba(251,146,60,.10)">⚡</div>
+        <div class="phase-header-text">
+          <h2>Phase IV — Modern C++ (C++17/20)</h2>
+          <div class="phase-meta">
+            <span class="tag tag-time">Weeks 10–12</span>
+            <span class="tag tag-lang">C++17 · C++20</span>
+            <span class="tag tag-level">Production-Grade</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-desc">The idioms that define contemporary C++: smart pointers, STL fluency, move semantics depth, structured concurrency, and the features that make C++ competitive with Rust for systems work.</p>
+
+      <div class="weeks">
+
+        <!-- Week 10 -->
+        <div class="week-card" id="wk-9">
+          <div class="week-header" onclick="toggleWeek('wk-9')">
+            <span class="week-num">Week 10</span>
+            <span class="week-title">Smart Pointers &amp; Modern Memory Management</span>
+            <span class="week-check" id="chk-9" onclick="toggleCheck(event,'chk-9')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">unique_ptr &amp; ownership</div>
+                <div class="topic-chip">shared_ptr &amp; weak_ptr</div>
+                <div class="topic-chip">make_unique / make_shared</div>
+                <div class="topic-chip">Move semantics deep dive</div>
+                <div class="topic-chip">std::move vs std::forward</div>
+                <div class="topic-chip">Perfect forwarding</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Port your Week 3 linked list to use <code>unique_ptr&lt;Node&gt;</code> — notice what disappears.</div>
+                <div class="exercise-item">Build a tree with <code>shared_ptr</code> children and <code>weak_ptr</code> parent links — avoid cycles.</div>
+                <div class="exercise-item">Write a factory function using perfect forwarding — confirm zero unnecessary copies with a copy-counting wrapper type.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 Tip:</strong> <code>unique_ptr</code> has zero runtime overhead over a raw pointer. Verify this by looking at the disassembly. This is the "zero-cost abstraction" promise made concrete.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 11 -->
+        <div class="week-card" id="wk-10">
+          <div class="week-header" onclick="toggleWeek('wk-10')">
+            <span class="week-num">Week 11</span>
+            <span class="week-title">STL Fluency &amp; Algorithm Library</span>
+            <span class="week-check" id="chk-10" onclick="toggleCheck(event,'chk-10')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">vector, deque, list, map,<br>unordered_map, set</div>
+                <div class="topic-chip">Iterators &amp; ranges</div>
+                <div class="topic-chip">std::algorithm fluency<br>(sort, find, transform…)</div>
+                <div class="topic-chip">Lambdas &amp; closures</div>
+                <div class="topic-chip">std::span (C++20)</div>
+                <div class="topic-chip">Structured bindings</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Solve 10 LeetCode mediums using only STL containers and <code>&lt;algorithm&gt;</code> — no manual loops for sorting/searching.</div>
+                <div class="exercise-item">Implement a word-frequency counter that uses <code>unordered_map</code> and is sorted via <code>std::sort</code> on a vector of pairs.</div>
+                <div class="exercise-item">Rewrite your Vec3 operations using C++20 ranges — compare readability to raw loops.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 12 -->
+        <div class="week-card" id="wk-11">
+          <div class="week-header" onclick="toggleWeek('wk-11')">
+            <span class="week-num">Week 12</span>
+            <span class="week-title">Concurrency: Threads, Atomics &amp; Coroutines</span>
+            <span class="week-check" id="chk-11" onclick="toggleCheck(event,'chk-11')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <div class="section-label">Topics</div>
+              <div class="topic-grid">
+                <div class="topic-chip">std::thread &amp; jthread</div>
+                <div class="topic-chip">mutex, lock_guard, unique_lock</div>
+                <div class="topic-chip">condition_variable</div>
+                <div class="topic-chip">std::atomic</div>
+                <div class="topic-chip">Memory ordering basics</div>
+                <div class="topic-chip">C++20 coroutines (intro)</div>
+              </div>
+              <div class="section-label">Exercises</div>
+              <div class="exercises">
+                <div class="exercise-item">Implement a thread-safe queue using mutex + condition_variable.</div>
+                <div class="exercise-item">Write a parallel map using a thread pool — compare wall time to single-threaded on a compute-heavy task.</div>
+                <div class="exercise-item">Reproduce a data race with TSan (<code>-fsanitize=thread</code>), then fix it with <code>std::atomic</code>.</div>
+              </div>
+              <div class="pro-tip"><strong>💡 HPC relevance:</strong> Your SLURM/DDP work is multi-process, but C++ concurrency is intra-process multi-threading. Understanding both lets you reason about the full memory hierarchy on TinkerCliffs.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /weeks -->
+
+      <div class="milestone">
+        <span class="milestone-icon">🎯</span>
+        <div class="milestone-text"><strong>Phase IV Milestone:</strong> You write modern C++ by default — smart pointers, STL algorithms, lambdas, move semantics. You can write and debug multithreaded C++ code and understand memory ordering. This is <em>intermediate</em>.</div>
+      </div>
+
+      <div class="phase-nav-controls">
+        <button class="btn btn-secondary" onclick="switchPhase(2)">← Phase III</button>
+        <button class="btn btn-primary" onclick="switchPhase(4)">Phase V →</button>
+      </div>
+    </div><!-- /phase-3 -->
+
+
+    <!-- ═══════════ PHASE V ═══════════ -->
+    <div class="phase-section" id="phase-4">
+      <div class="phase-header">
+        <div class="phase-icon" style="background:rgba(52,211,153,.10)">🚀</div>
+        <div class="phase-header-text">
+          <h2>Phase V — Capstone Projects</h2>
+          <div class="phase-meta">
+            <span class="tag tag-time">Weeks 13–14</span>
+            <span class="tag tag-lang">C++ · Systems</span>
+            <span class="tag tag-level">Consolidation</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-desc">Pick one or two of these projects that align with your actual goals. A finished project beats another tutorial. These are sized for 1–2 weeks of focused work each.</p>
+
+      <div class="weeks">
+
+        <div class="week-card" id="wk-12">
+          <div class="week-header" onclick="toggleWeek('wk-12')">
+            <span class="week-num">Project A</span>
+            <span class="week-title">Tensor Library (ML Infra track)</span>
+            <span class="week-check" id="chk-12" onclick="toggleCheck(event,'chk-12')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <p class="phase-desc" style="margin-bottom:12px">Build a minimal N-dimensional tensor with contiguous memory, strided views, broadcasting rules, and BLAS-backed matmul. Directly reinforces Trans7/PyTorch internals knowledge.</p>
+              <div class="section-label">Must implement</div>
+              <div class="exercises">
+                <div class="exercise-item">Template Tensor&lt;T, N&gt; with shape, strides, and a heap-allocated data buffer.</div>
+                <div class="exercise-item">Slice / view semantics — non-owning subview with offset strides.</div>
+                <div class="exercise-item">Element-wise ops via expression templates (lazy evaluation).</div>
+                <div class="exercise-item">matmul backed by cblas_sgemm from OpenBLAS.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="week-card" id="wk-13">
+          <div class="week-header" onclick="toggleWeek('wk-13')">
+            <span class="week-num">Project B</span>
+            <span class="week-title">HTTP/1.1 Server from Sockets (Systems track)</span>
+            <span class="week-check" id="chk-13" onclick="toggleCheck(event,'chk-13')"></span>
+            <span class="week-chevron">▶</span>
+          </div>
+          <div class="week-body">
+            <div class="week-body-inner">
+              <p class="phase-desc" style="margin-bottom:12px">Build a concurrent HTTP/1.1 server from POSIX sockets. No libraries. Forces mastery of async I/O, thread pooling, and protocol parsing — the same layer your FastAPI/Kafka streaming engine sits on.</p>
+              <div class="section-label">Must implement</div>
+              <div class="exercises">
+                <div class="exercise-item">TCP socket server with accept loop and thread-per-connection model.</div>
+                <div class="exercise-item">HTTP/1.1 request parser (method, path, headers, body).</div>
+                <div class="exercise-item">Router with GET/POST handler registration via lambdas.</div>
+                <div class="exercise-item">Thread pool with work queue — replace thread-per-connection.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /weeks -->
+
+      <div class="milestone">
+        <span class="milestone-icon">🏁</span>
+        <div class="milestone-text"><strong>Final Milestone:</strong> You have a non-trivial, working C++ project on GitHub. You can read production C++ codebases (libtorch, BLAS, LLVM internals) and reason about their design decisions. You are <strong>intermediate</strong>.</div>
+      </div>
+
+      <div class="phase-nav-controls">
+        <button class="btn btn-secondary" onclick="switchPhase(3)">← Phase IV</button>
+      </div>
+    </div><!-- /phase-4 -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+  const TOTAL_WEEKS = 14;
+  const checks = {};
+
+  function switchPhase(idx) {
+    document.querySelectorAll('.phase-section').forEach((s,i) => {
+      s.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.phase-nav-btn').forEach((b,i) => {
+      b.classList.toggle('active', i === idx);
+    });
+  }
+
+  function toggleWeek(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  function toggleCheck(e, id) {
+    e.stopPropagation();
+    const el = document.getElementById(id);
+    const wasChecked = el.classList.contains('checked');
+    el.classList.toggle('checked', !wasChecked);
+    checks[id] = !wasChecked;
+    updateProgress();
+    updateNavDots();
+  }
+
+  function updateProgress() {
+    const done = Object.values(checks).filter(Boolean).length;
+    const pct = Math.round((done / TOTAL_WEEKS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${done} / ${TOTAL_WEEKS} weeks done`;
+  }
+
+  function updateNavDots() {
+    const phaseRanges = [[0,2],[3,5],[6,8],[9,11],[12,13]];
+    phaseRanges.forEach((range, phaseIdx) => {
+      const btn = document.querySelector(`[data-phase="${phaseIdx}"]`);
+      const allDone = Array.from({length: range[1]-range[0]+1}, (_,i) => `chk-${range[0]+i}`)
+        .every(id => checks[id]);
+      if (allDone) btn.classList.add('done'); else btn.classList.remove('done');
+    });
+  }
+
+  // Open the first card of first phase by default
+  document.getElementById('wk-0').classList.add('open');
+</script>
+</body>
+</html>
