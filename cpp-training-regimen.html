@@ -1024,7 +1024,8 @@
 
 <script>
   const TOTAL_WEEKS = 14;
-  const checks = {};
+  const STORAGE_KEY = 'cpp-training-checks';
+  const checks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
 
   function switchPhase(idx) {
     document.querySelectorAll('.phase-section').forEach((s,i) => {
@@ -1046,6 +1047,7 @@
     const wasChecked = el.classList.contains('checked');
     el.classList.toggle('checked', !wasChecked);
     checks[id] = !wasChecked;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(checks));
     updateProgress();
     updateNavDots();
   }
@@ -1066,6 +1068,16 @@
       if (allDone) btn.classList.add('done'); else btn.classList.remove('done');
     });
   }
+
+  // Restore saved checkmarks from previous sessions
+  Object.keys(checks).forEach(id => {
+    if (checks[id]) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('checked');
+    }
+  });
+  updateProgress();
+  updateNavDots();
 
   // Open the first card of first phase by default
   document.getElementById('wk-0').classList.add('open');
