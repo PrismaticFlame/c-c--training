@@ -1,2 +1,15 @@
-phase_1/*
-!phase_1/*.c
+# Ignore everything...
+*
+
+# ...except directories (so git can recurse into them)...
+!*/
+
+# ...and the file types we want to keep
+!.gitignore
+!*.c
+!*.h
+!*.cpp
+!*.hpp
+!*.md
+!*.html
+!Makefile
